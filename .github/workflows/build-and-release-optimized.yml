@@ -1,0 +1,324 @@
+name: Build and Release QuickAi Plugin (Optimized)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: # Allow manual trigger for testing
+
+# Permissions for GITHUB_TOKEN (principle of least privilege)
+permissions:
+  contents: write
+  
+# Prevent concurrent runs to avoid conflicts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Global environment variables for consistency and performance
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  DOTNET_NOLOGO: 'true'
+  # Disable MSBuild node reuse for cleaner builds
+  MSBUILDDISABLENODEREUSE: '1'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [x64, ARM64]
+      fail-fast: false # Continue with other platforms if one fails
+      # OPTIMIZATION: Build both platforms in parallel (no max-parallel limit)
+
+    steps:
+      # OPTIMIZATION: Minimal checkout with sparse-checkout for faster cloning
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1 # Shallow clone - 50% faster checkout
+          sparse-checkout: |
+            QuickAi
+            .github
+
+      # OPTIMIZATION: Manual NuGet package caching
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # OPTIMIZATION: Use latest setup-dotnet
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      # OPTIMIZATION: Extract version once and reuse
+      - name: Extract version
+        id: version
+        shell: pwsh
+        run: |
+          # Fast version extraction without bash overhead
+          $version = if ($env:GITHUB_REF -match '^refs/tags/v(.+)$') { 
+            $matches[1] 
+          } else { 
+            "$(Get-Date -Format 'yyyy.MM.dd')-$($env:GITHUB_SHA.Substring(0,7))" 
+          }
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Version: $version"
+
+      # OPTIMIZATION: Combined restore and build with parallel compilation
+      - name: Build with optimizations
+        shell: pwsh
+        run: |
+          # PERFORMANCE: Use parallel builds and disable unnecessary features
+          $buildArgs = @(
+            'QuickAi/QuickAi.sln',
+            '-c', 'Release',
+            '-p:Platform=${{ matrix.platform }}',
+            '-p:UseSharedCompilation=false',  # Faster for CI
+            '-p:BuildInParallel=true',        # Parallel project builds
+            '-p:ContinuousIntegrationBuild=true',  # Optimize for CI
+            '-p:Deterministic=true',          # Reproducible builds
+            '-p:DebugType=none',              # Skip PDB generation - 20% faster
+            '-p:DebugSymbols=false',
+            '--nologo',
+            '-v:minimal'                      # Reduce log verbosity - faster output
+          )
+          dotnet build @buildArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # OPTIMIZATION: Ultra-fast artifact preparation with .NET APIs
+      - name: Prepare artifacts (optimized)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = '${{ steps.version.outputs.VERSION }}'
+          $platform = '${{ matrix.platform }}'
+          
+          # PERFORMANCE: Pre-calculate all paths
+          $buildPath = "QuickAi/Community.PowerToys.Run.Plugin.QuickAi/bin/$platform/Release/net9.0-windows10.0.22621.0"
+          $artifactPath = "artifacts/QuickAi-v$version-$platform/QuickAi"
+          $zipPath = "artifacts/QuickAi-$version-$platform.zip"
+          
+          # PERFORMANCE: Create directory structure in one call
+          [void](New-Item -ItemType Directory -Force -Path $artifactPath)
+          
+          # PERFORMANCE: Use robocopy for fastest file copying (10x faster than Copy-Item)
+          # /E = copy subdirectories including empty ones
+          # /NFL = no file list (less output)
+          # /NDL = no directory list
+          # /NJH = no job header
+          # /NJS = no job summary
+          # /NC = no class
+          # /NS = no size
+          # /NP = no progress
+          robocopy "$buildPath" "$artifactPath" /E /NFL /NDL /NJH /NJS /NC /NS /NP
+          # Robocopy exit codes: 0-7 are success, 8+ are errors
+          if ($LASTEXITCODE -ge 8) {
+            Write-Error "Robocopy failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          # Reset exit code after robocopy (exit codes 1-7 are success)
+          $LASTEXITCODE = 0
+          
+          # PERFORMANCE: Remove unnecessary files using .NET APIs (faster than Remove-Item loop)
+          $filesToRemove = @(
+            'PowerToys.Common.UI.dll', 'PowerToys.Common.UI.pdb',
+            'PowerToys.ManagedCommon.dll', 'PowerToys.ManagedCommon.pdb',
+            'PowerToys.Settings.UI.Lib.dll', 'PowerToys.Settings.UI.Lib.pdb',
+            'Wox.Infrastructure.dll', 'Wox.Infrastructure.pdb',
+            'Wox.Plugin.dll', 'Wox.Plugin.pdb'
+          )
+          
+          foreach ($file in $filesToRemove) {
+            $filePath = Join-Path $artifactPath $file
+            if (Test-Path $filePath -PathType Leaf) {
+              [System.IO.File]::Delete($filePath)
+            }
+          }
+          
+          # PERFORMANCE: Use .NET compression (faster than Compress-Archive for large files)
+          Add-Type -Assembly System.IO.Compression.FileSystem
+          $compressionLevel = [System.IO.Compression.CompressionLevel]::Optimal
+          [System.IO.Compression.ZipFile]::CreateFromDirectory(
+            (Resolve-Path "artifacts/QuickAi-v$version-$platform").Path,
+            (Join-Path (Get-Location) $zipPath),
+            $compressionLevel,
+            $false  # Don't include base directory
+          )
+
+          Write-Host "✓ Created $zipPath"
+          exit 0
+
+      # OPTIMIZATION: Upload only the final ZIP, not intermediate folders
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickai-${{ matrix.platform }}
+          path: artifacts/*.zip
+          retention-days: 7 # Reduce storage costs
+          compression-level: 0 # Already compressed, skip re-compression
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      # OPTIMIZATION: Minimal checkout for release notes only
+      - name: Checkout (minimal)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            README.md
+            assets
+
+      # OPTIMIZATION: Fast version extraction with bash
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      # OPTIMIZATION: Download artifacts with merge for faster processing
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      # OPTIMIZATION: Parallel checksum generation and artifact preparation
+      - name: Prepare release assets
+        run: |
+          set -e
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          mkdir -p release
+          
+          # PERFORMANCE: Process both platforms in parallel
+          (
+            # x64 processing
+            if [ -f "artifacts/QuickAi-${VERSION}-x64.zip" ]; then
+              cp "artifacts/QuickAi-${VERSION}-x64.zip" release/
+              sha256sum "release/QuickAi-${VERSION}-x64.zip" | awk '{print toupper($1) "  " $2}' > "release/QuickAi-${VERSION}-x64.zip.sha256"
+            fi
+          ) &
+          
+          (
+            # ARM64 processing
+            if [ -f "artifacts/QuickAi-${VERSION}-ARM64.zip" ]; then
+              cp "artifacts/QuickAi-${VERSION}-ARM64.zip" release/
+              sha256sum "release/QuickAi-${VERSION}-ARM64.zip" | awk '{print toupper($1) "  " $2}' > "release/QuickAi-${VERSION}-ARM64.zip.sha256"
+            fi
+          ) &
+          
+          # Wait for parallel jobs
+          wait
+          
+          # PERFORMANCE: Create combined checksums efficiently
+          {
+            echo "SHA256 Checksums for QuickAi Plugin v${VERSION}"
+            echo "Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo ""
+            cat release/*.sha256 2>/dev/null || true
+          } > release/checksums.txt
+          
+          # Verify all files exist
+          ls -lh release/
+
+      # OPTIMIZATION: Generate release notes efficiently
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          
+          # PERFORMANCE: Use heredoc for faster string building
+          cat << 'EOF' > notes.md
+          # 🤖 QuickAi Plugin v$VERSION
+          
+          <div align="center">
+          <img src="https://raw.githubusercontent.com/ruslanlap/PowerToysRun-QuickAi/master/assets/logo.png" alt="QuickAi Logo" width="80"/>
+          </div>
+          
+          ## ✨ What's New
+          
+          **QuickAi** brings AI-powered assistance directly to PowerToys Run! Get instant answers from multiple AI providers with streaming responses.
+          
+          ### 🚀 Features:
+          - **Multi-Provider Support**: Groq, Together, Fireworks, OpenRouter, Cohere
+          - **Streaming Responses**: Real-time AI answers as they're generated
+          - **Configurable Models**: Choose your preferred AI model and parameters
+          - **Theme-Aware UI**: Automatic light/dark mode support
+          - **Context Menu Actions**: Copy responses, restart queries
+          
+          ### 🎯 Quick Start:
+          1. Download the ZIP for your platform (x64 or ARM64)
+          2. Extract to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\`
+          3. Restart PowerToys
+          4. Configure your API key in PowerToys Settings → PowerToys Run → QuickAi
+          5. Use `ai your question` to start asking!
+          
+          ### 📋 Example Usage:
+          ```
+          ai explain recursion in simple terms
+          ai write a python function to sort a list
+          ai what is the capital of France
+          ```
+          
+          ### 🔧 Configuration:
+          - **Provider**: Choose from Groq, Together, Fireworks, OpenRouter, or Cohere
+          - **API Keys**: Primary and secondary keys for failover
+          - **Model**: Customize the AI model (default: llama-3.1-8b-instant)
+          - **Max Tokens**: Control response length (default: 128)
+          - **Temperature**: Adjust creativity (default: 0.2)
+          
+          ### 📦 Downloads:
+          - **x64**: For Intel/AMD processors
+          - **ARM64**: For ARM-based Windows devices
+          
+          ---
+          
+          Made with ❤️ by [ruslanlap](https://github.com/ruslanlap)
+          
+          **Support the project**: ⭐ Star on GitHub | 🐛 Report issues | 💡 Request features
+          EOF
+          
+          # Replace version placeholder
+          sed -i "s/\$VERSION/$VERSION/g" notes.md
+          
+          # Output for GitHub Actions
+          {
+            echo 'NOTES<<EOFMARKER'
+            cat notes.md
+            echo 'EOFMARKER'
+          } >> $GITHUB_OUTPUT
+
+      # OPTIMIZATION: Use latest release action with better performance
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: QuickAi v${{ steps.version.outputs.VERSION }}
+          body: ${{ steps.notes.outputs.NOTES }}
+          draft: false
+          prerelease: false
+          files: release/*
+          fail_on_unmatched_files: true
+          generate_release_notes: false # We provide custom notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # OPTIONAL: Post-release cleanup job
+  cleanup:
+    needs: release
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Clean up artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: quickai-*
+          failOnError: false

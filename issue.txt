@@ -1,0 +1,66 @@
+📋 Plugin: QuickAi
+📋 Version: 0.93.0
+🛠️  Building for x64...
+  Determining projects to restore...
+  Restored /home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj (in 323 ms).
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(600,30): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(624,30): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(739,81): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(752,69): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(752,86): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(67,34): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(72,23): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(73,23): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(78,33): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(782,19): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(783,19): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(803,27): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(56,89): error CS1739: The best overload for 'ProviderConfiguration' does not have a parameter named 'usesOpenAiSchema' [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(57,90): error CS1739: The best overload for 'ProviderConfiguration' does not have a parameter named 'usesOpenAiSchema' [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(58,101): error CS1739: The best overload for 'ProviderConfiguration' does not have a parameter named 'usesOpenAiSchema' [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(59,93): error CS1739: The best overload for 'ProviderConfiguration' does not have a parameter named 'usesOpenAiSchema' [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(60,74): error CS1739: The best overload for 'ProviderConfiguration' does not have a parameter named 'usesOpenAiSchema' [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(155,47): error CS1061: 'IPublicAPI' does not contain a definition for 'OpenSettingDialog' and no accessible extension method 'OpenSettingDialog' accepting a first argument of type 'IPublicAPI' could be found (are you missing a using directive or an assembly reference?) [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(528,23): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(569,34): error CS0173: Type of conditional expression cannot be determined because there is no implicit conversion between '<anonymous type: string model, <anonymous type: string role, string content>[] messages, bool stream, double temperature, int max_tokens>' and '<anonymous type: string model, string message, bool stream, double temperature, int max_tokens>' [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(596,70): error CS1503: Argument 3: cannot convert from 'string' to 'System.Net.Http.Headers.MediaTypeHeaderValue?' [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+📋 Plugin: QuickAi
+📋 Version: 0.93.0
+🛠️  Building for x64...
+  Determining projects to restore...
+  Restored /home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj (in 341 ms).
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(322,48): warning CS8603: Possible null reference return. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+  Community.PowerToys.Run.Plugin.QuickAi -> /home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/bin/Release/net9.0-windows10.0.22621.0/win-x64/Community.PowerToys.Run.Plugin.QuickAi.dll
+  Community.PowerToys.Run.Plugin.QuickAi -> /home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/bin/Release/net9.0-windows10.0.22621.0/win-x64/publish/
+🛠️  Building for ARM64...
+  Determining projects to restore...
+  Restored /home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj (in 356 ms).
+/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Main.cs(322,48): warning CS8603: Possible null reference return. [/home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/Community.PowerToys.Run.Plugin.QuickAi.csproj]
+  Community.PowerToys.Run.Plugin.QuickAi -> /home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/bin/Release/net9.0-windows10.0.22621.0/win-arm64/Community.PowerToys.Run.Plugin.QuickAi.dll
+  Community.PowerToys.Run.Plugin.QuickAi -> /home/runner/workspace/QuickAi/Community.PowerToys.Run.Plugin.QuickAi/bin/Release/net9.0-windows10.0.22621.0/win-arm64/publish/
+📦 Packaging x64...
+  adding: Images/ (stored 0%)
+  adding: Images/quickai.dark.png (deflated 9%)
+  adding: Images/quickai.light.png (stored 0%)
+  adding: Community.PowerToys.Run.Plugin.QuickAi.dll (deflated 57%)
+  adding: Community.PowerToys.Run.Plugin.QuickAi.deps.json (deflated 82%)
+  adding: plugin.json (deflated 39%)
+  adding: Microsoft.Windows.SDK.NET.dll (deflated 75%)
+  adding: WinRT.Runtime.dll (deflated 65%)
+  adding: Community.PowerToys.Run.Plugin.QuickAi.pdb (deflated 44%)
+📦 Packaging ARM64...
+  adding: Images/ (stored 0%)
+  adding: Images/quickai.dark.png (deflated 9%)
+  adding: Images/quickai.light.png (stored 0%)
+  adding: plugin.json (deflated 39%)
+  adding: Community.PowerToys.Run.Plugin.QuickAi.pdb (deflated 44%)
+  adding: Community.PowerToys.Run.Plugin.QuickAi.deps.json (deflated 82%)
+  adding: Community.PowerToys.Run.Plugin.QuickAi.dll (deflated 57%)
+  adding: Microsoft.Windows.SDK.NET.dll (deflated 75%)
+  adding: WinRT.Runtime.dll (deflated 65%)
+✅ Done! Created at repo root:
+ - QuickAi-0.93.0-x64.zip
+ - QuickAi-0.93.0-arm64.zip
+🔐 Generating checksums...
+x64  SHA256: da8647e76958ccc76b8aa2154ee5c42e54f5748445d4fcd7eca43f0d06bee703
+ARM64 SHA256: e12bbb906bacb809f600324d6537f81aba69c3bd29c2d01430667ef4c40d1d09

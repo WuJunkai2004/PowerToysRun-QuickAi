@@ -1,0 +1,3 @@
+is_global = true
+build_property.RootNamespace = Community.PowerToys.Run.Plugin.Templates
+build_property.ProjectDir = /home/runner/workspace/src/

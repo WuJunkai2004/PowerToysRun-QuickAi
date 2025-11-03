@@ -1,0 +1,14 @@
+{
+  "ID": "420129A62ECA49848C5C7CA229BFD22C",
+  "ActionKeyword": "ai",
+  "IsGlobal": false,
+  "Name": "QuickAi",
+  "Author": "ruslanlap",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://github.com/ruslanlap/PowerToysRun-QuickAi",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.QuickAi.dll",
+  "IcoPathDark": "Images\\ai.dark.png",
+  "IcoPathLight": "Images\\ai.light.png",
+  "DynamicLoading": false
+}
