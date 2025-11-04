@@ -16,7 +16,7 @@ Access multiple AI providers instantly with `Alt+Space` → `ai explain quantum 
 </a>
 <img src="https://img.shields.io/maintenance/yes/2025" alt="Maintenance">
 <img src="https://img.shields.io/badge/C%23-.NET%209.0-512BD4" alt="C# .NET 9.0">
-<img src="https://img.shields.io/badge/version-v1.0.0-brightgreen" alt="Version">
+<img src="https://img.shields.io/badge/version-v1.0.1-brightgreen" alt="Version">
 <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
 <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/stargazers">
   <img src="https://img.shields.io/github/stars/ruslanlap/PowerToysRun-QuickAi" alt="GitHub stars">
@@ -41,10 +41,10 @@ Access multiple AI providers instantly with `Alt+Space` → `ai explain quantum 
 </div>
 
 <div align="center">
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.0/QuickAi-1.0.0-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-x64.zip">
     <img src="https://img.shields.io/badge/⬇️_DOWNLOAD-x64-blue?style=for-the-badge&logo=github" alt="Download x64">
   </a>
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.0/QuickAi-1.0.0-ARM64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-ARM64.zip">
     <img src="https://img.shields.io/badge/⬇️_DOWNLOAD-ARM64-blue?style=for-the-badge&logo=github" alt="Download ARM64">
   </a>
 </div>
@@ -83,10 +83,10 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
   
   **⬇️ Ready to boost your productivity?**
   
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.0/QuickAi-1.0.0-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-x64.zip">
     <img src="https://img.shields.io/badge/Download_for-x64_Windows-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Download x64">
   </a>
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.0/QuickAi-1.0.0-ARM64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-ARM64.zip">
     <img src="https://img.shields.io/badge/Download_for-ARM64_Windows-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Download ARM64">
   </a>
 </div>
@@ -139,7 +139,7 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
 <td align="center" width="33%">
 <img width="60" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Globe%20showing%20americas/3D/globe_showing_americas_3d.png">
 <br><b>🌐 Multi-Provider</b><br>
-<sub>Groq, Together, Fireworks,<br>OpenRouter, Cohere</sub>
+<sub>Groq, Together, Fireworks,<br>OpenRouter, Cohere, Google</sub>
 </td>
 <td align="center" width="33%">
 <img width="60" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Key/3D/key_3d.png">
@@ -151,7 +151,7 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
 <td align="center" width="33%">
 <img width="60" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Gear/3D/gear_3d.png">
 <br><b>⚙️ Highly Configurable</b><br>
-<sub>Customize model, temperature,<br>and max tokens</sub>
+<sub>Customize model, temperature,<br>max tokens, and timeout</sub>
 </td>
 <td align="center" width="33%">
 <img width="60" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Clipboard/3D/clipboard_3d.png">
@@ -173,6 +173,7 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
 | **Fireworks** | `https://api.fireworks.ai/inference/v1/chat/completions` | `llama-3.1-8b-instant` | OpenAI |
 | **OpenRouter** | `https://openrouter.ai/api/v1/chat/completions` | `llama-3.1-8b-instant` | OpenAI |
 | **Cohere** | `https://api.cohere.com/v1/chat` | `command` | Cohere |
+| **Google** | `https://generativelanguage.googleapis.com/v1beta` | `gemini-1.5-flash` | Google |
 
 ---
 
@@ -201,7 +202,7 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
 ### 1️⃣ **Download & Extract** (15 seconds)
 ```bash
 # Choose your architecture
-wget https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.0/QuickAi-1.0.0-x64.zip
+wget https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-x64.zip
 # Extract to PowerToys plugin directory
 ```
 
@@ -253,8 +254,11 @@ ai create a product description for headphones
 <details>
 <summary><b>🎨 See All Available Features</b></summary>
 
-- **Streaming Responses**: Watch answers appear in real-time
-- **Context Menu**: Right-click results for copy/restart options
+- **Streaming Responses**: Watch answers appear in real-time (updates every 3 tokens or 150ms)
+- **Context Menu**: Right-click results for:
+  - Show full response (Enter)
+  - Copy response (Ctrl+C)
+  - Restart query (Ctrl+R)
 - **Multi-language Support**: Works with any language
 - **Code Highlighting**: Syntax-aware responses for code snippets
 - **History**: Previous responses cached for quick reference
@@ -271,8 +275,9 @@ ai create a product description for headphones
 **PowerToys Settings** → **PowerToys Run** → **Plugins** → **QuickAI** → Change `ai` to your preference
 
 ### Optimize Performance  
-- **Temperature**: Adjust creativity (0.0 = factual, 1.0 = creative)
-- **Max Tokens**: Control response length
+- **Temperature**: Adjust creativity (0.0 = factual, 2.0 = creative, default: 0.2)
+- **Max Tokens**: Control response length (16-4096, default: 128)
+- **Request Timeout**: Configure timeout in seconds (3-30, default: 8)
 - **Model Selection**: Choose specific models per provider
 - **Dual API Keys**: Configure backup keys for reliability
 
@@ -282,6 +287,7 @@ ai create a product description for headphones
 - **Fireworks**: Fast inference with custom models
 - **OpenRouter**: Access to multiple providers via one key
 - **Cohere**: Enterprise-grade models with different API
+- **Google**: Google Gemini models (API key passed as URL parameter)
 
 ### ⚠️ **Important: Model Name Configuration**
 
@@ -293,6 +299,7 @@ ai create a product description for headphones
 - **Fireworks**: `accounts/fireworks/models/llama-v3p1-8b-instruct` ⚠️ (must include full path)
 - **OpenRouter**: `meta-llama/llama-3.1-8b-instruct`, `anthropic/claude-3-haiku`
 - **Cohere**: `command`, `command-light`, `command-nightly`
+- **Google**: `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-pro`
 
 <div align="center">
 <img src="assets/settings.png" alt="Settings Example" width="600">
@@ -305,6 +312,7 @@ ai create a product description for headphones
 - **Fireworks**: [docs.fireworks.ai/models](https://docs.fireworks.ai/models) - Copy from "Model ID" field
 - **OpenRouter**: [openrouter.ai/models](https://openrouter.ai/models)
 - **Cohere**: [docs.cohere.com/docs/models](https://docs.cohere.com/docs/models)
+- **Google**: [ai.google.dev/models](https://ai.google.dev/models) - Google Gemini models
 
 </details>
 
@@ -350,6 +358,13 @@ ai create a product description for headphones
 4. Create a new key
 5. Copy and paste into QuickAI settings
 
+### Google
+1. Visit [https://ai.google.dev](https://ai.google.dev)
+2. Sign up or log in with your Google account
+3. Navigate to Get API Key section
+4. Create a new API key
+5. Copy and paste into QuickAI settings
+
 **💡 Tip**: Most providers offer free tiers perfect for testing QuickAI!
 
 </details>
@@ -363,27 +378,28 @@ ai create a product description for headphones
 
 ### Architecture
 - **Target Framework**: .NET 9.0 Windows (10.0.22621.0)
-- **Plugin Type**: Dynamic Loading Library
-- **HTTP Client**: Static singleton with 10-second timeout
-- **Streaming**: Server-Sent Events (SSE) parsing
+- **Plugin Type**: PowerToys Run Plugin (DynamicLoading: false)
+- **HTTP Client**: Static singleton with configurable timeout (default: 8 seconds, range: 3-30)
+- **Streaming**: Server-Sent Events (SSE) parsing with real-time UI updates
 - **JSON**: System.Text.Json for serialization
 - **UI**: WPF with theme-aware design
 
 ### Implementation Highlights
 - Implements `IPlugin` for PowerToys Run integration
 - Implements `ISettingProvider` for GUI configuration via `AdditionalOptions`
-- Implements `IContextMenu` for right-click actions
+- Implements `IContextMenu` for right-click actions (show full response, copy, restart)
 - Implements `IDisposable` for proper resource cleanup
 - Async HTTP requests with `Task.Run()` for non-blocking queries
-- Real-time result updates during streaming
+- Real-time result updates during streaming (batched every 3 tokens or 150ms for performance)
 - Automatic retry with secondary API key on failure
 - Thread-safe response building with `StringBuilder`
+- Supports multiple API schemas (OpenAI, Cohere, Google Gemini)
 
 ### Error Handling
 - Validates API key presence before requests
 - Handles network failures gracefully
 - Shows user-friendly error messages
-- Timeout protection (10 seconds default)
+- Configurable timeout protection (default: 8 seconds, range: 3-30)
 - JSON parsing error recovery
 - Automatic fallback to secondary API key
 
@@ -392,7 +408,7 @@ ai create a product description for headphones
 PowerToysRun-QuickAi/
 ├── QuickAi/
 │   ├── Community.PowerToys.Run.Plugin.QuickAi/
-│   │   ├── Main.cs                    # Core plugin implementation (1088 lines)
+│   │   ├── Main.cs                    # Core plugin implementation (1275 lines)
 │   │   ├── plugin.json                # Plugin manifest
 │   │   ├── *.csproj                   # Project file
 │   │   └── Images/
@@ -575,6 +591,7 @@ Released under the [MIT License](LICENSE). Free for personal and commercial use.
 - [Fireworks AI](https://fireworks.ai/) - AI model inference
 - [OpenRouter](https://openrouter.ai/) - Unified AI API access
 - [Cohere](https://cohere.com/) - Enterprise AI models
+- [Google AI](https://ai.google.dev/) - Google Gemini models
 
 **Built with:**
 - [Microsoft PowerToys](https://github.com/microsoft/PowerToys) - The extensible Windows productivity toolkit
