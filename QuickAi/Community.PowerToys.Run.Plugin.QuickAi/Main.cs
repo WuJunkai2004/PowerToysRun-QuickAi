@@ -29,6 +29,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         private const string ProviderFireworks = "Fireworks";
         private const string ProviderOpenRouter = "OpenRouter";
         private const string ProviderCohere = "Cohere";
+        private const string ProviderGoogle = "Google";
 
         private const string ProviderOptionKey = "quickai_provider";
         private const string PrimaryKeyOptionKey = "quickai_primary_key";
@@ -42,23 +43,30 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         private const double DefaultTemperature = 0.2d;
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
 
+        // Configurable timeout settings
+        private const int DefaultTimeoutSeconds = 8;
+        private const int MinTimeoutSeconds = 3;
+        private const int MaxTimeoutSeconds = 30;
+
         private static readonly List<string> SupportedProviders = new()
         {
             ProviderGroq,
             ProviderTogether,
             ProviderFireworks,
             ProviderOpenRouter,
-            ProviderCohere
+            ProviderCohere,
+            ProviderGoogle
         };
 
         private static readonly IReadOnlyDictionary<string, ProviderConfiguration> ProviderConfigurations =
             new Dictionary<string, ProviderConfiguration>(StringComparer.OrdinalIgnoreCase)
             {
-                [ProviderGroq] = new("https://api.groq.com/openai/v1/chat/completions", UsesOpenAiSchema: true),
-                [ProviderTogether] = new("https://api.together.xyz/v1/chat/completions", UsesOpenAiSchema: true),
-                [ProviderFireworks] = new("https://api.fireworks.ai/inference/v1/chat/completions", UsesOpenAiSchema: true),
-                [ProviderOpenRouter] = new("https://openrouter.ai/api/v1/chat/completions", UsesOpenAiSchema: true),
-                [ProviderCohere] = new("https://api.cohere.com/v1/chat", UsesOpenAiSchema: false)
+                [ProviderGroq] = new("https://api.groq.com/openai/v1/chat/completions", ProviderSchemaType.OpenAI),
+                [ProviderTogether] = new("https://api.together.xyz/v1/chat/completions", ProviderSchemaType.OpenAI),
+                [ProviderFireworks] = new("https://api.fireworks.ai/inference/v1/chat/completions", ProviderSchemaType.OpenAI),
+                [ProviderOpenRouter] = new("https://openrouter.ai/api/v1/chat/completions", ProviderSchemaType.OpenAI),
+                [ProviderCohere] = new("https://api.cohere.com/v1/chat", ProviderSchemaType.Cohere),
+                [ProviderGoogle] = new("https://generativelanguage.googleapis.com/v1beta", ProviderSchemaType.Google)
             };
 
         private static readonly HttpClient HttpClient = CreateHttpClient();
@@ -75,6 +83,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         private string _modelName = DefaultModelName;
         private int _maxTokens = DefaultMaxTokens;
         private double _temperature = DefaultTemperature;
+        private int _timeoutSeconds = DefaultTimeoutSeconds;
 
         private StreamingSession? _session;
         private bool _uiRefreshPending;
@@ -328,6 +337,18 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                             NumberBoxMax = 2.0,
                             NumberBoxSmallChange = 0.1,
                             NumberBoxLargeChange = 0.5
+                        },
+                        new()
+                        {
+                            Key = "quickai_timeout",
+                            DisplayLabel = "Request Timeout (seconds)",
+                            DisplayDescription = "Maximum time to wait for response. Lower = faster failure detection.",
+                            PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Numberbox,
+                            NumberValue = _timeoutSeconds,
+                            NumberBoxMin = MinTimeoutSeconds,
+                            NumberBoxMax = MaxTimeoutSeconds,
+                            NumberBoxSmallChange = 1,
+                            NumberBoxLargeChange = 5
                         }
                     };
                 }
@@ -393,13 +414,40 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         {
             var handler = new SocketsHttpHandler
             {
-                AutomaticDecompression = DecompressionMethods.Brotli | DecompressionMethods.Deflate | DecompressionMethods.GZip
+                // HTTP/2 optimization
+                EnableMultipleHttp2Connections = true,
+
+                // Connection pooling
+                PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
+                MaxConnectionsPerServer = 10,
+
+                // Compression (was already present)
+                AutomaticDecompression = DecompressionMethods.Brotli |
+                                         DecompressionMethods.Deflate |
+                                         DecompressionMethods.GZip,
+
+                // Security optimization
+                SslOptions = new System.Net.Security.SslClientAuthenticationOptions
+                {
+                    EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 |
+                                          System.Security.Authentication.SslProtocols.Tls13
+                },
+
+                // Performance tweak
+                UseCookies = false  // Not needed for API calls
             };
 
-            return new HttpClient(handler)
+            var client = new HttpClient(handler)
             {
-                Timeout = Timeout.InfiniteTimeSpan
+                Timeout = Timeout.InfiniteTimeSpan,
+
+                // HTTP/2 by default
+                DefaultRequestVersion = new Version(2, 0),
+                DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
             };
+
+            return client;
         }
 
         private void BeginStreaming(StreamingSession session)
@@ -502,7 +550,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         {
             using var request = BuildHttpRequest(providerConfiguration, configuration, prompt, apiKey);
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutCts.CancelAfter(RequestTimeout);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(configuration.TimeoutSeconds));
 
             using var response = await HttpClient
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeoutCts.Token)
@@ -515,9 +563,9 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
 
             response.EnsureSuccessStatusCode();
 
-            await foreach (var token in ParseStreamAsync(response, providerConfiguration, timeoutCts, cancellationToken).ConfigureAwait(false))
+            await foreach (var token in ParseStreamAsync(response, providerConfiguration, timeoutCts, configuration.TimeoutSeconds, cancellationToken).ConfigureAwait(false))
             {
-                timeoutCts.CancelAfter(RequestTimeout);
+                timeoutCts.CancelAfter(TimeSpan.FromSeconds(configuration.TimeoutSeconds));
                 yield return token;
             }
         }
@@ -526,6 +574,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             HttpResponseMessage response,
             ProviderConfiguration configuration,
             CancellationTokenSource timeoutSource,
+            int timeoutSeconds,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -562,9 +611,13 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                 try
                 {
                     using var document = JsonDocument.Parse(payload);
-                    token = configuration.UsesOpenAiSchema
-                        ? ExtractOpenAiDelta(document.RootElement)
-                        : ExtractCohereDelta(document.RootElement);
+                    token = configuration.SchemaType switch
+                    {
+                        ProviderSchemaType.OpenAI => ExtractOpenAiDelta(document.RootElement),
+                        ProviderSchemaType.Cohere => ExtractCohereDelta(document.RootElement),
+                        ProviderSchemaType.Google => ExtractGoogleDelta(document.RootElement),
+                        _ => null
+                    };
                 }
                 catch (JsonException)
                 {
@@ -573,7 +626,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
 
                 if (!string.IsNullOrEmpty(token))
                 {
-                    timeoutSource.CancelAfter(RequestTimeout);
+                    timeoutSource.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
                     yield return token;
                 }
             }
@@ -585,8 +638,85 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             string prompt,
             string apiKey)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, providerConfiguration.Endpoint);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            string endpoint = providerConfiguration.Endpoint;
+            string json;
+
+            // Build request based on provider schema type
+            switch (providerConfiguration.SchemaType)
+            {
+                case ProviderSchemaType.Google:
+                    // Google uses model in URL and API key as query parameter
+                    endpoint = $"{providerConfiguration.Endpoint}/models/{configuration.Model}:streamGenerateContent?key={apiKey}";
+                    var googlePayload = new
+                    {
+                        contents = new[]
+                        {
+                            new
+                            {
+                                parts = new[]
+                                {
+                                    new { text = prompt }
+                                }
+                            }
+                        },
+                        generationConfig = new
+                        {
+                            temperature = configuration.Temperature,
+                            maxOutputTokens = configuration.MaxTokens
+                        }
+                    };
+                    json = JsonSerializer.Serialize(googlePayload, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    });
+                    break;
+
+                case ProviderSchemaType.Cohere:
+                    var coherePayload = new
+                    {
+                        model = configuration.Model,
+                        message = prompt,
+                        stream = true,
+                        temperature = configuration.Temperature,
+                        max_tokens = configuration.MaxTokens
+                    };
+                    json = JsonSerializer.Serialize(coherePayload, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    });
+                    break;
+
+                case ProviderSchemaType.OpenAI:
+                default:
+                    var openAiPayload = new
+                    {
+                        model = configuration.Model,
+                        messages = new[]
+                        {
+                            new { role = "user", content = prompt }
+                        },
+                        stream = true,
+                        temperature = configuration.Temperature,
+                        max_tokens = configuration.MaxTokens
+                    };
+                    json = JsonSerializer.Serialize(openAiPayload, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    });
+                    break;
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+
+            // Google uses API key in URL, others use Authorization header
+            if (providerConfiguration.SchemaType != ProviderSchemaType.Google)
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            }
+
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Headers.UserAgent.ParseAdd("PowerToys-QuickAI/1.0");
@@ -596,43 +726,6 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             {
                 request.Headers.TryAddWithoutValidation("HTTP-Referer", "https://github.com/microsoft/PowerToys");
                 request.Headers.TryAddWithoutValidation("X-Title", "PowerToys Run QuickAI");
-            }
-
-            string json;
-            if (providerConfiguration.UsesOpenAiSchema)
-            {
-                var contentPayload = new
-                {
-                    model = configuration.Model,
-                    messages = new[]
-                    {
-                        new { role = "user", content = prompt }
-                    },
-                    stream = true,
-                    temperature = configuration.Temperature,
-                    max_tokens = configuration.MaxTokens
-                };
-                json = JsonSerializer.Serialize(contentPayload, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                });
-            }
-            else
-            {
-                var contentPayload = new
-                {
-                    model = configuration.Model,
-                    message = prompt,
-                    stream = true,
-                    temperature = configuration.Temperature,
-                    max_tokens = configuration.MaxTokens
-                };
-                json = JsonSerializer.Serialize(contentPayload, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                });
             }
 
             request.Content = new StringContent(json, Encoding.UTF8, new MediaTypeHeaderValue("application/json"));
@@ -683,6 +776,34 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             if (root.TryGetProperty("text", out var shorthandText) && shorthandText.ValueKind == JsonValueKind.String)
             {
                 return shorthandText.GetString();
+            }
+
+            return null;
+        }
+
+        private static string? ExtractGoogleDelta(JsonElement root)
+        {
+            // Google AI Studio streaming format: {"candidates":[{"content":{"parts":[{"text":"chunk"}]}}]}
+            if (!root.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
+            {
+                return null;
+            }
+
+            var candidate = candidates[0];
+            if (!candidate.TryGetProperty("content", out var content))
+            {
+                return null;
+            }
+
+            if (!content.TryGetProperty("parts", out var parts) || parts.GetArrayLength() == 0)
+            {
+                return null;
+            }
+
+            var part = parts[0];
+            if (part.TryGetProperty("text", out var text) && text.ValueKind == JsonValueKind.String)
+            {
+                return text.GetString();
             }
 
             return null;
@@ -745,6 +866,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             _modelName = DefaultModelName;
             _maxTokens = DefaultMaxTokens;
             _temperature = DefaultTemperature;
+            _timeoutSeconds = DefaultTimeoutSeconds;
         }
 
         private void ApplySettings(IEnumerable<PluginAdditionalOption> options)
@@ -780,6 +902,13 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                     case TemperatureOptionKey:
                         _temperature = Math.Clamp(option.NumberValue, 0.0, 2.0);
                         break;
+                    case "quickai_timeout":
+                        _timeoutSeconds = (int)Math.Clamp(
+                            option.NumberValue,
+                            MinTimeoutSeconds,
+                            MaxTimeoutSeconds
+                        );
+                        break;
                 }
             }
         }
@@ -788,7 +917,14 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         {
             lock (_sessionGate)
             {
-                return new ConfigurationSnapshot(_provider, _primaryApiKey, _secondaryApiKey, _modelName, _maxTokens, _temperature);
+                return new ConfigurationSnapshot(
+                    _provider,
+                    _primaryApiKey,
+                    _secondaryApiKey,
+                    _modelName,
+                    _maxTokens,
+                    _temperature,
+                    _timeoutSeconds);
             }
         }
 
@@ -831,7 +967,14 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             _context?.API?.ShowMsg(title, subtitle);
         }
 
-        private sealed record ProviderConfiguration(string Endpoint, bool UsesOpenAiSchema);
+        private enum ProviderSchemaType
+        {
+            OpenAI,
+            Cohere,
+            Google
+        }
+
+        private sealed record ProviderConfiguration(string Endpoint, ProviderSchemaType SchemaType);
 
         private sealed record ConfigurationSnapshot(
             string Provider,
@@ -839,7 +982,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             string? SecondaryApiKey,
             string Model,
             int MaxTokens,
-            double Temperature);
+            double Temperature,
+            int TimeoutSeconds);
 
         private readonly record struct ApiKeyCandidate(string Key, ApiKeyKind Kind);
 
@@ -859,6 +1003,12 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             private string? _status;
             private bool _hasError;
             private bool _completed;
+
+            // UI Batching optimization
+            private int _chunksSinceLastRefresh = 0;
+            private const int ChunksPerRefresh = 3;  // Update UI every 3 chunks
+            private DateTime _lastRefreshTime = DateTime.UtcNow;
+            private static readonly TimeSpan MinRefreshInterval = TimeSpan.FromMilliseconds(150);
 
             public StreamingSession(Main owner, string rawQuery, string prompt)
             {
@@ -926,6 +1076,10 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                     _status = null;
                     _hasError = false;
                     _completed = false;
+
+                    // Reset batching counters
+                    _chunksSinceLastRefresh = 0;
+                    _lastRefreshTime = DateTime.UtcNow;
                 }
 
                 _owner.BeginStreaming(this);
@@ -946,10 +1100,32 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                     return;
                 }
 
+                bool shouldRefresh = false;
+
                 lock (_sync)
                 {
                     _buffer.Append(text);
                     _status = null;
+                    _chunksSinceLastRefresh++;
+
+                    var timeSinceRefresh = DateTime.UtcNow - _lastRefreshTime;
+
+                    // Update UI if:
+                    // 1. Accumulated enough chunks (every 3 tokens) OR
+                    // 2. Enough time has passed (150ms for smoothness)
+                    if (_chunksSinceLastRefresh >= ChunksPerRefresh ||
+                        timeSinceRefresh >= MinRefreshInterval)
+                    {
+                        shouldRefresh = true;
+                        _chunksSinceLastRefresh = 0;
+                        _lastRefreshTime = DateTime.UtcNow;
+                    }
+                }
+
+                // Call refresh OUTSIDE of lock
+                if (shouldRefresh)
+                {
+                    _owner.TriggerRefresh(RawQuery);
                 }
             }
 
@@ -959,6 +1135,9 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                 {
                     _completed = true;
                 }
+
+                // Always refresh UI when completed
+                _owner.TriggerRefresh(RawQuery);
             }
 
             public void SetStatus(string message)
@@ -984,6 +1163,14 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                 lock (_sync)
                 {
                     return _prompt;
+                }
+            }
+
+            public string SnapshotResponse()
+            {
+                lock (_sync)
+                {
+                    return _buffer.ToString();
                 }
             }
 

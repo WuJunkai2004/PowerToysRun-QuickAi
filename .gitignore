@@ -12,7 +12,11 @@ bugfix
 CLAUDE.md
 PERFORMANCE_RECOMMENDATIONS.md
 QUICK_WINS.md
-SUMMARY_UA.md  
+SUMMARY_UA.md
+
+# Backup files
+*.backup
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 .github/data/
