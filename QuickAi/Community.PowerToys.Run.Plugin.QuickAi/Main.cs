@@ -645,8 +645,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             switch (providerConfiguration.SchemaType)
             {
                 case ProviderSchemaType.Google:
-                    // Google uses model in URL and API key as query parameter
-                    endpoint = $"{providerConfiguration.Endpoint}/models/{configuration.Model}:streamGenerateContent?key={apiKey}";
+                    // Google uses model in URL, API key in header, and alt=sse for streaming
+                    endpoint = $"{providerConfiguration.Endpoint}/models/{configuration.Model}:streamGenerateContent?alt=sse";
                     var googlePayload = new
                     {
                         contents = new[]
@@ -711,9 +711,15 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
 
             var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
 
-            // Google uses API key in URL, others use Authorization header
-            if (providerConfiguration.SchemaType != ProviderSchemaType.Google)
+            // Set authentication based on provider
+            if (providerConfiguration.SchemaType == ProviderSchemaType.Google)
             {
+                // Google uses x-goog-api-key header
+                request.Headers.TryAddWithoutValidation("x-goog-api-key", apiKey);
+            }
+            else
+            {
+                // Others use Authorization: Bearer header
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             }
 
