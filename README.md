@@ -16,7 +16,7 @@ Access multiple AI providers instantly with `Alt+Space` → `ai explain quantum 
 </a>
 <img src="https://img.shields.io/maintenance/yes/2025" alt="Maintenance">
 <img src="https://img.shields.io/badge/C%23-.NET%209.0-512BD4" alt="C# .NET 9.0">
-<img src="https://img.shields.io/badge/version-v1.0.1-brightgreen" alt="Version">
+<img src="https://img.shields.io/badge/version-v1.1.0-brightgreen" alt="Version">
 <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
 <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/stargazers">
   <img src="https://img.shields.io/github/stars/ruslanlap/PowerToysRun-QuickAi" alt="GitHub stars">
@@ -41,10 +41,10 @@ Access multiple AI providers instantly with `Alt+Space` → `ai explain quantum 
 </div>
 
 <div align="center">
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.1.0/QuickAi-1.1.0-x64.zip">
     <img src="https://img.shields.io/badge/⬇️_DOWNLOAD-x64-blue?style=for-the-badge&logo=github" alt="Download x64">
   </a>
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-ARM64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.1.0/QuickAi-1.1.0-ARM64.zip">
     <img src="https://img.shields.io/badge/⬇️_DOWNLOAD-ARM64-blue?style=for-the-badge&logo=github" alt="Download ARM64">
   </a>
 </div>
@@ -83,10 +83,10 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
   
   **⬇️ Ready to boost your productivity?**
   
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.1.0/QuickAi-1.1.0-x64.zip">
     <img src="https://img.shields.io/badge/Download_for-x64_Windows-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Download x64">
   </a>
-  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-ARM64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.1.0/QuickAi-1.1.0-ARM64.zip">
     <img src="https://img.shields.io/badge/Download_for-ARM64_Windows-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Download ARM64">
   </a>
 </div>
@@ -139,7 +139,7 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
 <td align="center" width="33%">
 <img width="60" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Globe%20showing%20americas/3D/globe_showing_americas_3d.png">
 <br><b>🌐 Multi-Provider</b><br>
-<sub>Groq, Together, Fireworks,<br>OpenRouter, Cohere, Google</sub>
+<sub>Groq, Together, Fireworks,<br>OpenRouter, Cohere, Google, Ollama</sub>
 </td>
 <td align="center" width="33%">
 <img width="60" src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Key/3D/key_3d.png">
@@ -174,6 +174,9 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
 | **OpenRouter** | `https://openrouter.ai/api/v1/chat/completions` | `llama-3.1-8b-instant` | OpenAI |
 | **Cohere** | `https://api.cohere.com/v1/chat` | `command` | Cohere |
 | **Google** | `https://generativelanguage.googleapis.com/v1beta` | `gemini-1.5-flash` | Google |
+| **Ollama** 🆕 | `http://localhost:11434/v1/chat/completions` | `llama3.2` | OpenAI |
+
+> 🎉 **New in v1.1.0**: Local AI with Ollama support! Run models on your own machine with zero API costs. Thanks to [@fuzhiyin-7](https://github.com/fuzhiyin-7) for the idea!
 
 ---
 
@@ -202,7 +205,7 @@ Alt+Space → ai translate to french  # 🌍 Language tasks
 ### 1️⃣ **Download & Extract** (15 seconds)
 ```bash
 # Choose your architecture
-wget https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.0.1/QuickAi-1.0.1-x64.zip
+wget https://github.com/ruslanlap/PowerToysRun-QuickAi/releases/download/v1.1.0/QuickAi-1.1.0-x64.zip
 # Extract to PowerToys plugin directory
 ```
 
@@ -288,6 +291,7 @@ ai create a product description for headphones
 - **OpenRouter**: Access to multiple providers via one key
 - **Cohere**: Enterprise-grade models with different API
 - **Google**: Google Gemini models (API key passed as URL parameter)
+- **Ollama** 🆕: Run models locally on your machine - zero API costs, complete privacy, customizable host URL
 
 ### ⚠️ **Important: Model Name Configuration**
 
@@ -300,6 +304,7 @@ ai create a product description for headphones
 - **OpenRouter**: `meta-llama/llama-3.1-8b-instruct`, `anthropic/claude-3-haiku`
 - **Cohere**: `command`, `command-light`, `command-nightly`
 - **Google**: `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-pro`
+- **Ollama** 🆕: `llama3.2`, `mistral`, `qwen2.5`, `codellama`, `deepseek-r1` (any locally pulled model)
 
 <div align="center">
 <img src="assets/settings.png" alt="Settings Example" width="600">
@@ -313,6 +318,7 @@ ai create a product description for headphones
 - **OpenRouter**: [openrouter.ai/models](https://openrouter.ai/models)
 - **Cohere**: [docs.cohere.com/docs/models](https://docs.cohere.com/docs/models)
 - **Google**: [ai.google.dev/models](https://ai.google.dev/models) - Google Gemini models
+- **Ollama** 🆕: [ollama.com/library](https://ollama.com/library) - Run `ollama list` to see locally pulled models
 
 </details>
 
@@ -365,7 +371,15 @@ ai create a product description for headphones
 4. Create a new API key
 5. Copy and paste into QuickAI settings
 
-**💡 Tip**: Most providers offer free tiers perfect for testing QuickAI!
+### Ollama (Local - No API Key Required!) 🆕
+1. Install Ollama from [https://ollama.com](https://ollama.com)
+2. Run `ollama serve` to start the local server
+3. Pull a model: `ollama pull llama3.2` (or any model)
+4. Select "Ollama" provider in QuickAI settings
+5. Set model name to your pulled model (e.g., `llama3.2`, `mistral`, `qwen2.5`)
+6. Optionally configure custom host URL (default: `http://localhost:11434`)
+
+**💡 Tip**: Most cloud providers offer free tiers perfect for testing QuickAI! With Ollama, run unlimited queries locally for free!
 
 </details>
 
@@ -551,12 +565,22 @@ Any model supported by your chosen provider. Popular choices include Llama 3.1, 
 
 <details>
 <summary><b>Is my data private?</b></summary>
-Your queries are sent to the chosen AI provider's API. Check each provider's privacy policy for details on data handling.
+Your queries are sent to the chosen AI provider's API. Check each provider's privacy policy for details on data handling. **NEW**: With Ollama, everything stays on your machine - complete privacy!
 </details>
 
 <details>
 <summary><b>Can I use it offline?</b></summary>
-No, an internet connection is required to communicate with AI providers' APIs.
+Cloud providers (Groq, Together, etc.) require internet. **NEW**: With Ollama, you can run AI completely offline on your local machine!
+</details>
+
+<details>
+<summary><b>How do I use Ollama for local AI?</b></summary>
+1. Install Ollama from [ollama.com](https://ollama.com)<br>
+2. Run `ollama serve` in terminal<br>
+3. Pull a model: `ollama pull llama3.2`<br>
+4. Select "Ollama" in QuickAI settings<br>
+5. Set model name to your pulled model<br>
+6. Enjoy unlimited local AI queries with zero API costs!
 </details>
 
 ---
@@ -589,6 +613,7 @@ No, an internet connection is required to communicate with AI providers' APIs.
 - QuickAI plugin itself does **not collect or store** any query data
 - Check each provider's privacy policy for their data handling practices
 - Most providers use queries for model improvement (check provider settings to opt-out)
+- 🆕 **Ollama**: Complete privacy - all processing happens locally on your machine, no data leaves your computer
 
 ---
 
@@ -607,10 +632,14 @@ Released under the [MIT License](LICENSE). Free for personal and commercial use.
 - [OpenRouter](https://openrouter.ai/) - Unified AI API access
 - [Cohere](https://cohere.com/) - Enterprise AI models
 - [Google AI](https://ai.google.dev/) - Google Gemini models
+- [Ollama](https://ollama.com/) - Local AI model runner
 
 **Built with:**
 - [Microsoft PowerToys](https://github.com/microsoft/PowerToys) - The extensible Windows productivity toolkit
 - [.NET](https://dotnet.microsoft.com/) - Cross-platform development platform
+
+**Special Thanks:**
+- [@fuzhiyin-7](https://github.com/fuzhiyin-7) - For suggesting Ollama integration, bringing local AI support to QuickAI! 🎉
 
 ---
 

@@ -30,6 +30,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         private const string ProviderOpenRouter = "OpenRouter";
         private const string ProviderCohere = "Cohere";
         private const string ProviderGoogle = "Google";
+        private const string ProviderOllama = "Ollama";
 
         private const string ProviderOptionKey = "quickai_provider";
         private const string PrimaryKeyOptionKey = "quickai_primary_key";
@@ -37,6 +38,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         private const string ModelOptionKey = "quickai_model";
         private const string MaxTokensOptionKey = "quickai_max_tokens";
         private const string TemperatureOptionKey = "quickai_temperature";
+        private const string OllamaHostOptionKey = "quickai_ollama_host";
+        private const string DefaultOllamaHost = "http://localhost:11434";
 
         private const string DefaultModelName = "llama-3.1-8b-instant";
         private const int DefaultMaxTokens = 128;
@@ -55,7 +58,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             ProviderFireworks,
             ProviderOpenRouter,
             ProviderCohere,
-            ProviderGoogle
+            ProviderGoogle,
+            ProviderOllama
         };
 
         private static readonly IReadOnlyDictionary<string, ProviderConfiguration> ProviderConfigurations =
@@ -66,7 +70,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                 [ProviderFireworks] = new("https://api.fireworks.ai/inference/v1/chat/completions", ProviderSchemaType.OpenAI),
                 [ProviderOpenRouter] = new("https://openrouter.ai/api/v1/chat/completions", ProviderSchemaType.OpenAI),
                 [ProviderCohere] = new("https://api.cohere.com/v1/chat", ProviderSchemaType.Cohere),
-                [ProviderGoogle] = new("https://generativelanguage.googleapis.com/v1beta", ProviderSchemaType.Google)
+                [ProviderGoogle] = new("https://generativelanguage.googleapis.com/v1beta", ProviderSchemaType.Google),
+                [ProviderOllama] = new("http://localhost:11434/v1/chat/completions", ProviderSchemaType.OpenAI)
             };
 
         private static readonly HttpClient HttpClient = CreateHttpClient();
@@ -84,6 +89,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         private int _maxTokens = DefaultMaxTokens;
         private double _temperature = DefaultTemperature;
         private int _timeoutSeconds = DefaultTimeoutSeconds;
+        private string _ollamaHost = DefaultOllamaHost;
 
         private StreamingSession? _session;
         private bool _uiRefreshPending;
@@ -349,6 +355,14 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                             NumberBoxMax = MaxTimeoutSeconds,
                             NumberBoxSmallChange = 1,
                             NumberBoxLargeChange = 5
+                        },
+                        new()
+                        {
+                            Key = OllamaHostOptionKey,
+                            DisplayLabel = "Ollama Host URL",
+                            DisplayDescription = "Host URL for local Ollama instance (e.g., http://localhost:11434).",
+                            PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Textbox,
+                            TextValue = _ollamaHost
                         }
                     };
                 }
@@ -641,6 +655,12 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             string endpoint = providerConfiguration.Endpoint;
             string json;
 
+            // Override endpoint for Ollama with custom host
+            if (string.Equals(configuration.Provider, ProviderOllama, StringComparison.OrdinalIgnoreCase))
+            {
+                endpoint = $"{configuration.OllamaHost.TrimEnd('/')}/v1/chat/completions";
+            }
+
             // Build request based on provider schema type
             switch (providerConfiguration.SchemaType)
             {
@@ -712,7 +732,11 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
 
             // Set authentication based on provider
-            if (providerConfiguration.SchemaType == ProviderSchemaType.Google)
+            if (string.Equals(configuration.Provider, ProviderOllama, StringComparison.OrdinalIgnoreCase))
+            {
+                // Ollama doesn't require authentication
+            }
+            else if (providerConfiguration.SchemaType == ProviderSchemaType.Google)
             {
                 // Google uses x-goog-api-key header
                 request.Headers.TryAddWithoutValidation("x-goog-api-key", apiKey);
@@ -860,6 +884,12 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         {
             lock (_sessionGate)
             {
+                // Ollama doesn't require an API key
+                if (string.Equals(_provider, ProviderOllama, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                
                 return !string.IsNullOrWhiteSpace(_primaryApiKey) || !string.IsNullOrWhiteSpace(_secondaryApiKey);
             }
         }
@@ -873,6 +903,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             _maxTokens = DefaultMaxTokens;
             _temperature = DefaultTemperature;
             _timeoutSeconds = DefaultTimeoutSeconds;
+            _ollamaHost = DefaultOllamaHost;
         }
 
         private void ApplySettings(IEnumerable<PluginAdditionalOption> options)
@@ -915,6 +946,9 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                             MaxTimeoutSeconds
                         );
                         break;
+                    case OllamaHostOptionKey:
+                        _ollamaHost = string.IsNullOrWhiteSpace(option.TextValue) ? DefaultOllamaHost : option.TextValue.Trim();
+                        break;
                 }
             }
         }
@@ -930,7 +964,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                     _modelName,
                     _maxTokens,
                     _temperature,
-                    _timeoutSeconds);
+                    _timeoutSeconds,
+                    _ollamaHost);
             }
         }
 
@@ -989,7 +1024,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             string Model,
             int MaxTokens,
             double Temperature,
-            int TimeoutSeconds);
+            int TimeoutSeconds,
+            string OllamaHost);
 
         private readonly record struct ApiKeyCandidate(string Key, ApiKeyKind Kind);
 

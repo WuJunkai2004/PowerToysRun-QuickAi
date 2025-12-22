@@ -244,23 +244,47 @@ jobs:
           <img src="https://raw.githubusercontent.com/ruslanlap/PowerToysRun-QuickAi/master/assets/logo.png" alt="QuickAi Logo" width="80"/>
           </div>
           
-          ## ✨ What's New
+          ## ✨ What's New in v$VERSION
+          
+          ### 🎉 Major Feature: Local AI with Ollama!
+          
+          Run AI models **completely offline** on your own machine with **zero API costs**!
+          
+          - 🏠 **Full Privacy**: All processing happens locally - no data leaves your computer
+          - 💰 **Zero Cost**: Unlimited queries with no API fees
+          - 🚀 **Fast**: No network latency, instant responses
+          - 🔧 **Flexible**: Use any Ollama model - llama3.2, mistral, qwen2.5, deepseek-r1, etc.
+          - ⚙️ **Customizable**: Configure custom host URL for remote Ollama instances
+          
+          **Big thanks to [@fuzhiyin-7](https://github.com/fuzhiyin-7) for suggesting this feature!**
+          
+          ---
           
           **QuickAi** brings AI-powered assistance directly to PowerToys Run! Get instant answers from multiple AI providers with streaming responses.
           
-          ### 🚀 Features:
-          - **Multi-Provider Support**: Groq, Together, Fireworks, OpenRouter, Cohere
+          ### 🚀 All Features:
+          - **Multi-Provider Support**: Groq, Together, Fireworks, OpenRouter, Cohere, Google, **Ollama (NEW!)**
+          - **Local AI**: Run models offline with Ollama - complete privacy, zero cost
           - **Streaming Responses**: Real-time AI answers as they're generated
           - **Configurable Models**: Choose your preferred AI model and parameters
           - **Theme-Aware UI**: Automatic light/dark mode support
           - **Context Menu Actions**: Copy responses, restart queries
           
-          ### 🎯 Quick Start:
+          ### 🎯 Quick Start (Cloud Providers):
           1. Download the ZIP for your platform (x64 or ARM64)
           2. Extract to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\`
           3. Restart PowerToys
           4. Configure your API key in PowerToys Settings → PowerToys Run → QuickAi
           5. Use `ai your question` to start asking!
+          
+          ### 🏠 Quick Start (Ollama - Local AI):
+          1. Download the ZIP for your platform (x64 or ARM64)
+          2. Extract to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\`
+          3. Install Ollama from [ollama.com](https://ollama.com)
+          4. Run `ollama serve` and `ollama pull llama3.2`
+          5. Select "Ollama" provider in QuickAI settings
+          6. Set model name to `llama3.2` (or your preferred model)
+          7. No API key needed - enjoy unlimited free local AI!
           
           ### 📋 Example Usage:
           ```
@@ -270,11 +294,12 @@ jobs:
           ```
           
           ### 🔧 Configuration:
-          - **Provider**: Choose from Groq, Together, Fireworks, OpenRouter, or Cohere
-          - **API Keys**: Primary and secondary keys for failover
-          - **Model**: Customize the AI model (default: llama-3.1-8b-instant)
+          - **Provider**: Choose from Groq, Together, Fireworks, OpenRouter, Cohere, Google, or **Ollama**
+          - **API Keys**: Primary and secondary keys for failover (not needed for Ollama)
+          - **Model**: Customize the AI model (default: llama-3.1-8b-instant for cloud, llama3.2 for Ollama)
           - **Max Tokens**: Control response length (default: 128)
           - **Temperature**: Adjust creativity (default: 0.2)
+          - **Ollama Host**: Custom URL for Ollama instances (default: http://localhost:11434)
           
           ### 📦 Downloads:
           - **x64**: For Intel/AMD processors
