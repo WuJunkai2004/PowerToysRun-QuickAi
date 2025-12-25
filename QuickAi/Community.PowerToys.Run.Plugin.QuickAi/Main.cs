@@ -52,6 +52,9 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
         private const int MinTimeoutSeconds = 3;
         private const int MaxTimeoutSeconds = 30;
 
+        // The Result Window handles streaming display
+        private ResultsWindow? _resultsWindow;
+
         private static readonly List<string> SupportedProviders = new()
         {
             ProviderGroq,
@@ -222,15 +225,15 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                         AcceleratorModifiers = ModifierKeys.None,
                         Action = _ =>
                         {
-                            try
+                            lock (_sessionGate)
                             {
-                                ShowInfo("QuickAI Response", responseText);
-                                return true;
+                                if (_session != null)
+                                {
+                                    OpenResultsWindow(_session);
+                                    return true;
+                                }
                             }
-                            catch
-                            {
-                                return false;
-                            }
+                            return false;
                         },
                     },
                     new ContextMenuResult
@@ -425,6 +428,41 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             }
 
             _disposed = true;
+        }
+
+        // open or activate the results window
+        private void OpenResultsWindow(StreamingSession session)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (_resultsWindow == null || !_resultsWindow.IsLoaded)
+                {
+                    _resultsWindow = new ResultsWindow();
+                    _resultsWindow.Closed += (_, _) => _resultsWindow = null;
+                    _resultsWindow.Show();
+                }
+                else
+                {
+                    _resultsWindow.Activate();
+                }
+
+                // initialize with current snapshot
+                _resultsWindow.SetFullText(session.SnapshotResponse());
+
+                // subscribe to subsequent streaming updates
+                // first unsubscribe old subscription to prevent duplicates
+                session.TokenReceived -= OnTokenReceived; 
+                session.TokenReceived += OnTokenReceived;
+            });
+        }
+
+        // handle streaming updates
+        private void OnTokenReceived(string text)
+        {
+            if (_resultsWindow != null && _resultsWindow.IsLoaded)
+            {
+                _resultsWindow.AppendText(text);
+            }
         }
 
         private static HttpClient CreateHttpClient()
@@ -1064,6 +1102,7 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             }
 
             public string RawQuery { get; }
+            public event Action<string>? TokenReceived;
 
             public CancellationToken Token
             {
@@ -1167,6 +1206,9 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                         _lastRefreshTime = DateTime.UtcNow;
                     }
                 }
+
+                // Connect token received event
+                TokenReceived?.Invoke(text);
 
                 // Call refresh OUTSIDE of lock
                 if (shouldRefresh)
@@ -1275,7 +1317,10 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                         SubTitle = subtitle,
                         IcoPath = iconPath,
                         Score = 100,
-                        Action = action => CopyToClipboard(),
+                        Action = action => {
+                            _owner.OpenResultsWindow(this);
+                            return true;
+                        },
                         ContextData = responseText
                     };
                 }
