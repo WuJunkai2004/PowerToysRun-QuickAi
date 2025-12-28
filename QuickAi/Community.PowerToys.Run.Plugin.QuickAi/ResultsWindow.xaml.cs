@@ -7,9 +7,18 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
 {
     public partial class ResultsWindow : Window
     {
+        private MarkdownRenderer _markdownRenderer;
+        private bool _isDarkTheme = true;
+
         public ResultsWindow()
         {
             InitializeComponent();
+            InitializeRenderer();
+        }
+
+        private void InitializeRenderer()
+        {
+            _markdownRenderer = new MarkdownRenderer(MainParagraph, _isDarkTheme);
         }
 
         public void AppendText(string text)
@@ -17,10 +26,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             // keep UI thread safety
             Dispatcher.BeginInvoke(() =>
             {
-                // now use a sampler way to append text
-                // just add a new Run to the Paragraph Inlines
-                // the markdown rendering will handle the rest
-                MainParagraph.Inlines.Add(new System.Windows.Documents.Run(text));
+                // Use MarkdownRenderer for streaming rendering
+                _markdownRenderer.Append(text);
 
                 // scroll to end: bring last block into view
                 try
@@ -39,7 +46,32 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             Dispatcher.Invoke(() =>
             {
                 MainParagraph.Inlines.Clear();
-                MainParagraph.Inlines.Add(new System.Windows.Documents.Run(text));
+                InitializeRenderer();
+                _markdownRenderer.Append(text);
+                _markdownRenderer.Flush();
+            });
+        }
+
+        /// <summary>
+        /// Flush the renderer cache to ensure all content is output
+        /// </summary>
+        public void FlushRenderer()
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                _markdownRenderer?.Flush();
+            });
+        }
+
+        /// <summary>
+        /// Clear content and reset the renderer
+        /// </summary>
+        public void Clear()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                MainParagraph.Inlines.Clear();
+                InitializeRenderer();
             });
         }
 
@@ -55,6 +87,8 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
             {
                 try
                 {
+                    _isDarkTheme = theme == "dark";
+                    
                     if (theme == "light")
                     {
                         Background = Brushes.White;
@@ -73,6 +107,10 @@ namespace Community.PowerToys.Run.Plugin.QuickAI
                             OutputViewer.Document.Background = Brushes.Transparent;
                         }
                     }
+
+                    // Re-initialize the renderer to use the new theme
+                    // Note: This will not clear existing content, it only affects subsequent rendering
+                    _markdownRenderer = new MarkdownRenderer(MainParagraph, _isDarkTheme);
                 }
                 catch
                 {
